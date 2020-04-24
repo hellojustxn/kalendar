@@ -1,0 +1,7 @@
+token*
+*.html
+__pycache__/*
+*.txt
+*.json
+priv*
+sheets/
