@@ -10,11 +10,7 @@ from enum import Enum
 
 from contextlib import suppress
 
-
-
 DEBUG = False
-MAX_RESULT = 500
-
 
 class Fields(Enum):
     SUMMARY = 0
@@ -24,12 +20,13 @@ class Fields(Enum):
     END_DATE = 4
 
 def main():
+    MAX_RESULT = 20
     sheetData = getSheetData(id = priv.TODO_SPREADSHEET_ID, range = priv.SCHEDULE_RANGE)
-    showCalendar(id = priv.AI_CAL_ID, maxResults = 100)
+    showCalendar(id = priv.AI_CAL_ID, maxResults = MAX_RESULT)
 
     for event in sheetData:
         if DEBUG: print(event)
-        
+
         createEvent(priv.AI_CAL_ID,
                     event[Fields.SUMMARY.value],
                     event[Fields.LOCATION.value],
@@ -47,12 +44,12 @@ def authorize(service_type):
 
     if service_type == 'calendar':
         scope = ['https://www.googleapis.com/auth/calendar']
-        pickle_file = 'token.pickle'
-        cred_file = 'credentials.json'
+        pickle_file = 'token.pickle.calendar'
+        cred_file = 'credentials-cal.json'
     else:
         scope = ['https://www.googleapis.com/auth/spreadsheets.readonly']
         # Select pickle file according to the service type
-        pickle_file = 'token.pickle_sheet'
+        pickle_file = 'token.pickle.sheets'
         cred_file = 'credentials-sheets.json'
 
     creds = None
@@ -107,14 +104,15 @@ def createEvent(id,summary, location, description, startDateTime, endDateTime):
         },
     }
 
-    events = getCalendarData(id = id, maxResults = 500)
+    # TODO: Handle comparisons elsewhere!
+    events = getCalendarData(id = id, maxResults = 50)
 
     # Check if the event exists
     eventExists = False
     for event in events:
         # print("Calendar Event: ", event['summary'], " -----  New event: ", newEvent['summary'])
         if event['summary'] == newEvent['summary']:
-            print("Calendar Event: ", event['summary'], " -----  Existing event found: ", newEvent['summary'])
+            # print("Calendar Event: ", event['summary'], " -----  Existing event found: ", newEvent['summary'])
             eventExists = True
             break
 
@@ -125,19 +123,14 @@ def createEvent(id,summary, location, description, startDateTime, endDateTime):
         service = build('calendar', 'v3', credentials=authorize('calendar'))
         createEvent = service.events().insert(calendarId=id, body=newEvent).execute()
 
-    showCalendar(id, MAX_RESULT)
-
-
 def showCalendar(id, maxResults):
     events = getCalendarData(id = id, maxResults = maxResults)
     if not events:
         print('No upcoming events found.')
     for event in events:
         start = event['start'].get('dateTime', event['start'].get('date'))
-        print(start, event['summary'], event['id'])
 
 def showSheet(id, range):
-    if DEBUG: print('Getting your schedule from Google Sheets')
     service = build('sheets', 'v4', credentials=authorize(service_type='sheets'))
     sheet = service.spreadsheets()
     result = sheet.values().get(spreadsheetId=id, range=range).execute()
@@ -146,7 +139,6 @@ def showSheet(id, range):
         print(value)
 
 def getCalendarData(id, maxResults):
-    if DEBUG: print('Getting your events from Google Calendar')
     service = build('calendar', 'v3', credentials=authorize('calendar'))
 
     # Call the Calendar API
@@ -155,16 +147,14 @@ def getCalendarData(id, maxResults):
     events_result = service.events().list(calendarId=id, timeMin=now,
                                         maxResults=maxResults, singleEvents=True,
                                         orderBy='startTime').execute()
-    events = events_result.get('items', [])
-    return events
+    return events_result.get('items', [])
 
 def getSheetData(id, range):
-    if DEBUG: print('Getting your schedule from Google Sheets')
     service = build('sheets', 'v4', credentials=authorize(service_type='sheets'))
     sheet = service.spreadsheets()
     result = sheet.values().get(spreadsheetId=id, range=range).execute()
-    values = result.get('values', [])
-    return values
+    return result.get('values', [])
+
 
 if __name__ == '__main__':
     main()
