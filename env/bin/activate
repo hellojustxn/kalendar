@@ -46,7 +46,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV='/Users/justin.lee/Desktop/cloned-repos/kalendar/env'
+VIRTUAL_ENV='/Users/justin.lee/Documents/cloned-repos/kalendar/env'
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

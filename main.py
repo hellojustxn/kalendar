@@ -22,7 +22,7 @@ class Fields(Enum):
 def main():
     MAX_RESULT = 20
     sheetData = getSheetData(id = priv.TODO_SPREADSHEET_ID, range = priv.SCHEDULE_RANGE)
-    showCalendar(id = priv.AI_CAL_ID, maxResults = MAX_RESULT)
+    # showCalendar(id = priv.AI_CAL_ID, maxResults = MAX_RESULT)
 
     for event in sheetData:
         if DEBUG: print(event)
@@ -105,18 +105,24 @@ def createEvent(id,summary, location, description, startDateTime, endDateTime):
     }
 
     # TODO: Handle comparisons elsewhere!
-    events = getCalendarData(id = id, maxResults = 50)
-
+    events = getCalendarData(id = id, maxResults = 20)
+    now = datetime.datetime.now().isoformat() + 'Z' # 'Z' indicates UTC time
     # Check if the event exists
     eventExists = False
+    pastEvent = False
     for event in events:
         # print("Calendar Event: ", event['summary'], " -----  New event: ", newEvent['summary'])
         if event['summary'] == newEvent['summary']:
             # print("Calendar Event: ", event['summary'], " -----  Existing event found: ", newEvent['summary'])
             eventExists = True
             break
+        if newEvent['start']['dateTime'] < now:
+            # print("Calendar Event: ", event['summary'], " -----  Existing event found: ", newEvent['summary'])
+            print('Lets not create an event in the past')    
+            pastEvent = True
+            break
 
-    if eventExists:
+    if eventExists or pastEvent:
         print('Event already exists!')
     else:
         print('Creating event: ',newEvent['summary'])
@@ -138,17 +144,19 @@ def showSheet(id, range):
     for value in values:
         print(value)
 
+# Returns a list of events from google calendar
 def getCalendarData(id, maxResults):
     service = build('calendar', 'v3', credentials=authorize('calendar'))
 
     # Call the Calendar API
     now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
-    print('Getting the upcoming', maxResults, 'events')
+    # print('Getting the upcoming', maxResults, 'events')
     events_result = service.events().list(calendarId=id, timeMin=now,
                                         maxResults=maxResults, singleEvents=True,
                                         orderBy='startTime').execute()
     return events_result.get('items', [])
 
+# Returns a list of rows from google sheet
 def getSheetData(id, range):
     service = build('sheets', 'v4', credentials=authorize(service_type='sheets'))
     sheet = service.spreadsheets()

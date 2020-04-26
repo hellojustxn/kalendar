@@ -28,7 +28,7 @@ def _deactivate(args):
 _deactivate(["nondestructive"])
 aliases["deactivate"] = _deactivate
 
-$VIRTUAL_ENV = r"/Users/justin.lee/Desktop/cloned-repos/kalendar/env"
+$VIRTUAL_ENV = r"/Users/justin.lee/Documents/cloned-repos/kalendar/env"
 
 $_OLD_VIRTUAL_PATH = $PATH
 $PATH = $PATH[:]
