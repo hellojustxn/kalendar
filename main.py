@@ -22,11 +22,9 @@ class Fields(Enum):
 def main():
     MAX_RESULT = 20
     sheetData = getSheetData(id = priv.TODO_SPREADSHEET_ID, range = priv.SCHEDULE_RANGE)
-    # showCalendar(id = priv.AI_CAL_ID, maxResults = MAX_RESULT)
     existingEvents = getCalendarData(id = priv.AI_CAL_ID, maxResults = 20)
     now = datetime.datetime.now().isoformat() + 'Z' # 'Z' indicates UTC time
    
-    
     for event in sheetData:
         eventExists = False
         pastEvent = False
@@ -49,31 +47,6 @@ def main():
                     event[Fields.DESCRIPTION.value],
                     event[Fields.START_DATE.value],
                     event[Fields.END_DATE.value])
-
-
-    # # TODO: Handle comparisons elsewhere, likely cause of "Calendar usage limits"
-    # existinEvents = getCalendarData(id = id, maxResults = 20)
-    # now = datetime.datetime.now().isoformat() + 'Z' # 'Z' indicates UTC time
-    # # Check if the event exists
-    # eventExists = False
-    # pastEvent = False
-    # for event in events:
-    #     # print("Calendar Event: ", event['summary'], " -----  New event: ", newEvent['summary'])
-    #     if event['summary'] == newEvent['summary']:
-    #         # print("Calendar Event: ", event['summary'], " -----  Existing event found: ", newEvent['summary'])
-    #         eventExists = True
-    #         break
-    #     if newEvent['start']['dateTime'] < now:
-    #         # print("Calendar Event: ", event['summary'], " -----  Existing event found: ", newEvent['summary'])
-    #         print('Lets not create an event in the past')    
-    #         pastEvent = True
-    #         break
-
-    # if eventExists or pastEvent:
-    #     print('Event already exists!')
-    # else:
-    #     print('Creating event: ',newEvent['summary'])
-    #     service = build('calendar', 'v3', credentials=authorize('calendar'))
 
 # Will only add/remove today's and future events, will not modify the past
 def sync():
@@ -146,29 +119,6 @@ def createEvent(id,summary, location, description, startDateTime, endDateTime):
     }
 
     service = build('calendar', 'v3', credentials=authorize('calendar'))
-    # # TODO: Handle comparisons elsewhere, likely cause of "Calendar usage limits"
-    # events = getCalendarData(id = id, maxResults = 20)
-    # now = datetime.datetime.now().isoformat() + 'Z' # 'Z' indicates UTC time
-    # # Check if the event exists
-    # eventExists = False
-    # pastEvent = False
-    # for event in events:
-    #     # print("Calendar Event: ", event['summary'], " -----  New event: ", newEvent['summary'])
-    #     if event['summary'] == newEvent['summary']:
-    #         # print("Calendar Event: ", event['summary'], " -----  Existing event found: ", newEvent['summary'])
-    #         eventExists = True
-    #         break
-    #     if newEvent['start']['dateTime'] < now:
-    #         # print("Calendar Event: ", event['summary'], " -----  Existing event found: ", newEvent['summary'])
-    #         print('Lets not create an event in the past')    
-    #         pastEvent = True
-    #         break
-
-    # if eventExists or pastEvent:
-    #     print('Event already exists!')
-    # else:
-    #     print('Creating event: ',newEvent['summary'])
-    #     service = build('calendar', 'v3', credentials=authorize('calendar'))
     createEvent = service.events().insert(calendarId=id, body=newEvent).execute()
 
 def showCalendar(id, maxResults):
